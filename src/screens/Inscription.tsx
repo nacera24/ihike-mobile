@@ -14,37 +14,50 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig'; 
+
 
 type InscriptionScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Inscription'>;
 
 export default function Inscription() {
   const navigation = useNavigation<InscriptionScreenNavigationProp>();
   const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [age, setAge] = useState('');
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
 
-  const handleInscription = async () => {
-    if (!nom || !email || !motDePasse) {
-      Alert.alert('Erreur', 'Tous les champs sont requis.');
-      return;
+ const handleInscription = async () => {
+  if (!nom || !prenom || !age || !email || !motDePasse) {
+    Alert.alert('Erreur', 'Tous les champs sont requis.');
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, motDePasse);
+    const user = userCredential.user;
+
+    // Mettre à jour le nom affiché dans Firebase Auth
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, { displayName: nom });
     }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, motDePasse);
-      const user = userCredential.user;
+    // Ajouter les données utilisateur dans Firestore
+    await setDoc(doc(db, 'utilisateurs', user.uid), {
+      nom,
+      prenom,
+      age,
+      email,
+    });
 
-      //  ajoute du nom à l'utilisateur Firebase
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName: nom });
-      }
-
-      Alert.alert('Succès', 'Compte créé avec succès !');
-      navigation.navigate('Connexion');
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert('Erreur', error.message);
-    }
-  };
+    Alert.alert('Succès', 'Compte créé avec succès !');
+    navigation.navigate('Connexion');
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert('Erreur', error.message);
+  }
+};
 
   return (
     <KeyboardAvoidingView
@@ -54,10 +67,25 @@ export default function Inscription() {
       <Text style={styles.title}>Créer un compte 📝</Text>
 
       <TextInput
-        placeholder="Nom complet"
+        placeholder="Nom"
         style={styles.input}
         value={nom}
         onChangeText={setNom}
+      />
+
+      <TextInput
+       placeholder="Prénom"
+       style={styles.input}
+       value={prenom}
+       onChangeText={setPrenom}
+      />
+
+      <TextInput
+       placeholder="Âge"
+       style={styles.input}
+       value={age}
+       onChangeText={setAge}
+       keyboardType="numeric"
       />
 
       <TextInput
