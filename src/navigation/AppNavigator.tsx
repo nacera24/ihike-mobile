@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Accueil from '../screens/Accueil';
 import Connexion from '../screens/Connexion';
 import Inscription from '../screens/Inscription';
+import DrawerNavigator from './DrawerNavigator';
 
 
 const Stack = createNativeStackNavigator();
@@ -15,6 +16,12 @@ export default function AppNavigator() {
         <Stack.Screen name="Accueil" component={Accueil} options={{ headerShown: false }} />
         <Stack.Screen name="Connexion" component={Connexion} /> 
         <Stack.Screen name="Inscription" component={Inscription} /> 
+       {/* Pages accessibles après connexion */}
+        <Stack.Screen
+          name="Home"
+          component={DrawerNavigator}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

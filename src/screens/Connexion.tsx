@@ -34,7 +34,7 @@ export default function Connexion() {
     try {
       await signInWithEmailAndPassword(auth, email, motDePasse);
       Alert.alert('Succès', 'Connexion réussie');
-      navigation.navigate('Accueil'); 
+      navigation.replace('Home');
     } catch (error: any) {
       console.error(error);
       Alert.alert('Erreur', error.message);
