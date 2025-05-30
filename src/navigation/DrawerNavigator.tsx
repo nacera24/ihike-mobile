@@ -1,11 +1,9 @@
-// src/navigation/DrawerNavigator.tsx
-
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Home from '../screens/Home';
 import Profil from '../screens/Profil';
 import MesSuivis from '../screens/MesSuivis';
-import CustomDrawerContent from './CustomDrawerContent'; // 👈 importe ton drawer personnalisé
+import CustomDrawerContent from './CustomDrawerContent'; /
 
 const Drawer = createDrawerNavigator();
 
