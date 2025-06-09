@@ -5,7 +5,7 @@ import Accueil from '../screens/Accueil';
 import Connexion from '../screens/Connexion';
 import Inscription from '../screens/Inscription';
 import DrawerNavigator from './DrawerNavigator';
-
+import Suivi from '../screens/Suivi';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +22,7 @@ export default function AppNavigator() {
           component={DrawerNavigator}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="Suivi" component={Suivi} />
       </Stack.Navigator>
     </NavigationContainer>
   );

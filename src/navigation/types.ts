@@ -5,4 +5,5 @@ export type RootStackParamList = {
   Home: undefined;
   Profil: undefined;
   MesSuivis: undefined;
+  Suivi: undefined;
 };

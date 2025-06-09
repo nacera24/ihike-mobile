@@ -4,8 +4,14 @@ import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import LottieView from 'lottie-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
+
+type AccueilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export default function Home() {
+  const navigation = useNavigation<AccueilScreenNavigationProp>();
   const [nom, setNom] = useState('');
 
     useEffect(() => {
@@ -42,9 +48,10 @@ export default function Home() {
     </View>
 
     <View style={styles.bottom}>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Démarrer un suivi</Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Suivi')}>
+          <Text style={styles.buttonText}>Démarrer un suivi</Text>
       </TouchableOpacity>
+
     </View>
   </View>
 );
