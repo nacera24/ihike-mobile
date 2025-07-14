@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -8,53 +8,61 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { setNom } from '../redux/userSlice';
+import { MaterialCommunityIcons } from '@expo/vector-icons'; // AJOUT DE L'ICÔNE
+
 type AccueilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export default function Home() {
   const navigation = useNavigation<AccueilScreenNavigationProp>();
-  const [nom, setNom] = useState('');
+  const dispatch = useDispatch();
+  const nom = useSelector((state: RootState) => state.user.nom);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchNomUtilisateur = async () => {
-      const auth = getAuth(); // Récupère l’instance Firebase Auth
-      const user = auth.currentUser; // Utilisateur actuellement connecté
+      const auth = getAuth();
+      const user = auth.currentUser;
 
       if (user) {
-        const docRef = doc(db, 'utilisateurs', user.uid); // Référence au document Firestore
-        const docSnap = await getDoc(docRef); // Récupère le document
+        const docRef = doc(db, 'utilisateurs', user.uid);
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = docSnap.data(); // Récupère les données
-          setNom(data.nom || ''); // Stocke le nom dans l’état
+          const data = docSnap.data();
+          dispatch(setNom(data.nom || ''));
         }
       }
     };
 
-    fetchNomUtilisateur(); // Appelle la fonction au démarrage
-  }, []);
+    fetchNomUtilisateur();
+  }, [dispatch]);
 
   return (
-  <View style={styles.container}>
-    <LottieView
-      source={require('../../assets/animations/walking.json')}
-      autoPlay
-      loop
-      style={styles.backgroundAnimation}
-      resizeMode="cover"
-    />
+    <View style={styles.container}>
+      <LottieView
+        source={require('../../assets/animations/walking.json')}
+        autoPlay
+        loop
+        style={styles.backgroundAnimation}
+        resizeMode="cover"
+      />
 
-    <View style={styles.top}>
-      <Text style={styles.bienvenue} numberOfLines={1} ellipsizeMode="tail"> Bienvenue, {nom} 👋</Text>
-    </View>
+      <View style={styles.top}>
+        <Text style={styles.bienvenue} numberOfLines={1} ellipsizeMode="tail">
+          Bienvenue, {nom} 👋
+        </Text>
+      </View>
 
-    <View style={styles.bottom}>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Suivi')}>
+      <View style={styles.bottom}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Suivi')}>
+          <MaterialCommunityIcons name="walk" size={22} color="#fff" style={styles.icon} />
           <Text style={styles.buttonText}>Démarrer un suivi</Text>
-      </TouchableOpacity>
-
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-);
+  );
 }
 
 const styles = StyleSheet.create({
@@ -86,8 +94,14 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#007AFF',
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderRadius: 10,
+    flexDirection: 'row', 
+    alignItems: 'center',
+  },
+  icon: {
+    marginRight: 10,
   },
   buttonText: {
     color: 'white',

@@ -1,51 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
-import * as Location from 'expo-location';
+import { useDispatch, useSelector } from 'react-redux';
+import { setPhotos, Photo } from '../redux/photoSlice';
+import { RootState } from '../redux/store';
 
 export default function MesPhotos() {
-  const [photos, setPhotos] = useState<any[]>([]);
+  const dispatch = useDispatch();
+  const photos = useSelector((state: RootState) => state.photos.items);
   const [loading, setLoading] = useState(true);
 
-  const getAdresse = async (latitude: number, longitude: number) => {
-    try {
-      const results = await Location.reverseGeocodeAsync({ latitude, longitude });
-      if (results.length > 0) {
-        const { street, city, region, country } = results[0];
-        return `${street}, ${city}, ${region}, ${country}`;
-      }
-    } catch (error) {
-      console.error('Erreur de géocodage :', error);
-    }
-    return `${latitude}, ${longitude}`;
-  };
-
   useEffect(() => {
-    const fetchPhotos = async () => {
-      const user = getAuth().currentUser;
-      if (!user) return;
+    const user = getAuth().currentUser;
+    if (!user) return;
 
-      try {
-        const snapshot = await getDocs(collection(db, 'photos', user.uid, 'items'));
-        const data = await Promise.all(
-          snapshot.docs.map(async doc => {
-            const photo = doc.data();
-            const adresse = await getAdresse(photo.latitude, photo.longitude);
-            return { ...photo, adresse };
-          })
-        );
-        setPhotos(data);
-      } catch (error) {
-        console.error('Erreur lors du chargement des photos :', error);
-      } finally {
+    const unsubscribe = onSnapshot(
+      collection(db, 'photos', user.uid, 'items'),
+      (snapshot) => {
+        const data: Photo[] = snapshot.docs.map((doc) => doc.data() as Photo);
+        dispatch(setPhotos(data));
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Erreur lors de l’écoute Firestore :', error);
         setLoading(false);
       }
-    };
+    );
 
-    fetchPhotos();
-  }, []);
+    return () => unsubscribe();
+  }, [dispatch]);
 
   if (loading) {
     return (

@@ -1,0 +1,9 @@
+
+5.  Fin de randonnée
+Une fois que l’utilisateur appuie sur “Arrêter”, l’application affiche :
+
+Distance parcourue
+
+Durée
+
+https://console.firebase.google.com/project/randomap-fb590/firestore/databases/-default-/data/~2Fsuivis~2F56IL7Al1LQVSS83Z3HJ6Jb7Zcdz2

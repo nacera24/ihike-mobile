@@ -2,6 +2,7 @@
   "expo": {
     "name": "MonSuiviRando",
     "slug": "MonSuiviRando",
+    "owner": "sahminacera",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,6 +25,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autorisez MonSuiviRando à accéder à votre caméra",
+          "microphonePermission": "Autorisez MonSuiviRando à accéder à votre micro",
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
   }
 }

@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// 🔐 objet de configuration Firebase
+//  objet de configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAwzj7o03qIbwzTSwD1Ii0kUHyZBo_zTnE",
   authDomain: "randomap-fb590.firebaseapp.com",

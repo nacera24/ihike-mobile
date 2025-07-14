@@ -1,19 +1,32 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Alert, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, Image, Modal } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
-import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import { getAuth } from 'firebase/auth';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  startTracking as startTrackingAction,
+  stopTracking as stopTrackingAction,
+  addPoint,
+  addPhotoSession,
+} from '../redux/randoSlice';
+import { getAdresseGoogle } from '../utils/geocoding';
 
 export default function Suivi() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [route, setRoute] = useState<Array<{ latitude: number; longitude: number }>>([]);
-  const [photos, setPhotos] = useState<Array<{ uri: string; latitude: number; longitude: number }>>([]);
-  const [watcher, setWatcher] = useState<Location.LocationSubscription | null>(null);
-  const [tracking, setTracking] = useState(false);
+  const dispatch = useDispatch();
   const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<any>(null);
+
+  const { tracking, route, photosSession } = useSelector((state: RootState) => state.rando);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [watcher, setWatcher] = useState<Location.LocationSubscription | null>(null);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     (async () => {
@@ -22,13 +35,22 @@ export default function Suivi() {
         Alert.alert("Permission refusée", "L'application a besoin de la localisation.");
         return;
       }
-
       const currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation);
     })();
   }, []);
 
   const startTracking = async () => {
+    dispatch(startTrackingAction());
+    if (location) {
+      mapRef.current?.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.001,
+        longitudeDelta: 0.001,
+      }, 1000);
+    }
+
     const subscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
@@ -41,26 +63,31 @@ export default function Suivi() {
           longitude: loc.coords.longitude,
         };
         setLocation(loc);
-        setRoute((prev) => [...prev, point]);
+        dispatch(addPoint(point));
         savePointToFirebase(point);
+
+        mapRef.current?.animateToRegion({
+          latitude: point.latitude,
+          longitude: point.longitude,
+          latitudeDelta: 0.001,
+          longitudeDelta: 0.001,
+        });
       }
     );
     setWatcher(subscription);
-    setTracking(true);
   };
 
   const stopTracking = () => {
     if (watcher) {
       watcher.remove();
       setWatcher(null);
-      setTracking(false);
+      dispatch(stopTrackingAction());
     }
   };
 
   const savePointToFirebase = async (point: { latitude: number; longitude: number }) => {
     const user = getAuth().currentUser;
     if (!user) return;
-
     try {
       await addDoc(collection(db, 'suivis', user.uid, 'points'), {
         latitude: point.latitude,
@@ -68,35 +95,39 @@ export default function Suivi() {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement Firebase :", error);
+      console.error("Erreur Firebase :", error);
     }
   };
 
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
+  const openCamera = async () => {
+    const { granted } = await requestPermission();
+    if (!granted) {
       Alert.alert("Permission refusée", "L'accès à la caméra est requis.");
       return;
     }
+    setCameraVisible(true);
+  };
 
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 0.5,
-    });
+  const takePhoto = async () => {
+    if (cameraRef.current && location) {
+      const photoData: CameraCapturedPicture = await cameraRef.current.takePictureAsync();
+      const { latitude, longitude } = location.coords;
+      const adresse = await getAdresseGoogle(latitude, longitude);
 
-    if (!result.canceled && location) {
-            const photo = {
-        uri: result.assets[0].uri,
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+      const photo = {
+        uri: photoData.uri,
+        latitude,
+        longitude,
+        adresse,
         timestamp: new Date().toISOString(),
       };
 
-      setPhotos([...photos, photo]);
-      //  Ajouter cet enregistrement dans Firestore
+      dispatch(addPhotoSession(photo));
       const user = getAuth().currentUser;
       if (user) {
-     await addDoc(collection(db, 'photos', user.uid, 'items'), photo);
-        }
+        await addDoc(collection(db, 'photos', user.uid, 'items'), photo);
+      }
+      setCameraVisible(false);
     }
   };
 
@@ -112,16 +143,16 @@ export default function Suivi() {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           }}
-          region={{
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
         >
-          <Marker coordinate={location.coords} title="Vous êtes ici" />
-          {route.length > 1 && <Polyline coordinates={route} strokeWidth={4} strokeColor="blue" />}
-          {photos.map((photo, index) => (
+          <Marker coordinate={location.coords}>
+            <MaterialCommunityIcons name="walk" size={40} color="blue" />
+          </Marker>
+
+          {route.length > 1 && (
+            <Polyline coordinates={route} strokeWidth={4} strokeColor="blue" />
+          )}
+
+          {photosSession.map((photo, index) => (
             <Marker key={index} coordinate={{ latitude: photo.latitude, longitude: photo.longitude }}>
               <Image source={{ uri: photo.uri }} style={{ width: 40, height: 40, borderRadius: 10 }} />
             </Marker>
@@ -130,21 +161,29 @@ export default function Suivi() {
       )}
 
       <View style={styles.buttons}>
-        {!tracking ? (
-          <TouchableOpacity style={styles.startButton} onPress={startTracking}>
-            <Text style={styles.buttonText}>Démarrer</Text>
-          </TouchableOpacity>
-        ) : (
-          <>
-            <TouchableOpacity style={styles.photoButton} onPress={takePhoto}>
-              <Text style={styles.buttonText}>📸 Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.stopButton} onPress={stopTracking}>
-              <Text style={styles.buttonText}>Arrêter</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        <TouchableOpacity
+          style={[styles.toggleButton, { backgroundColor: tracking ? 'red' : 'green' }]}
+          onPress={tracking ? stopTracking : startTracking}
+        >
+          <Text style={styles.buttonText}>
+            {tracking ? 'Arrêter la randonnée' : 'Démarrer la randonnée'}
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {tracking && (
+        <TouchableOpacity style={styles.floatingCameraButton} onPress={openCamera}>
+          <MaterialCommunityIcons name="camera" size={30} color="#333" />
+        </TouchableOpacity>
+      )}
+
+      <Modal visible={cameraVisible} transparent={false}>
+        <CameraView ref={cameraRef} style={styles.camera}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={takePhoto} style={styles.captureButton} />
+          </View>
+        </CameraView>
+      </Modal>
     </View>
   );
 }
@@ -162,23 +201,50 @@ const styles = StyleSheet.create({
     gap: 20,
     alignSelf: 'center',
   },
-  startButton: {
-    backgroundColor: 'green',
+  toggleButton: {
     padding: 15,
     borderRadius: 10,
-  },
-  stopButton: {
-    backgroundColor: 'red',
-    padding: 15,
-    borderRadius: 10,
-  },
-  photoButton: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 10,
+    marginBottom: 10,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
+  },
+  floatingCameraButton: {
+    position: 'absolute',
+    bottom: 120,
+    alignSelf: 'center',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 3,
+    borderColor: '#888',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  camera: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+  },
+  captureButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'white',
+    borderWidth: 4,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
