@@ -29,11 +29,13 @@ const randoSlice = createSlice({
   initialState,
   reducers: {
     startTracking(state) {
+      // Efface l'ancien tracé uniquement quand on démarre une nouvelle randonnée
       state.route = [];
-      state.tracking = true;
       state.photosSession = [];
+      state.tracking = true;
     },
     stopTracking(state) {
+      //  On arrête juste le suivi, mais on garde le tracé visible
       state.tracking = false;
     },
     addPoint(state, action: PayloadAction<Point>) {
@@ -44,6 +46,5 @@ const randoSlice = createSlice({
     },
   },
 });
-
 export const { startTracking, stopTracking, addPoint, addPhotoSession } = randoSlice.actions;
 export default randoSlice.reducer;

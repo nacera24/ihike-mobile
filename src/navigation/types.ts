@@ -4,6 +4,8 @@ export type RootStackParamList = {
   Inscription: undefined;
   Home: undefined;
   Profil: undefined;
-  MesSuivis: undefined;
+  Historique: undefined;
+  DetailRando:undefined;
   Suivi: undefined;
+  MainApp: undefined;
 };

@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
 import photoReducer from './photoSlice';
 import randoReducer from './randoSlice';
+import historiqueReducer from "./historiqueSlice"; 
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
     photos: photoReducer,
     rando: randoReducer,
+    historique: historiqueReducer,
   },
 });
 

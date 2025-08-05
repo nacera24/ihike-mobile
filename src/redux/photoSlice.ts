@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface Photo {
+  id?: string; 
   uri: string;
   latitude: number;
   longitude: number;

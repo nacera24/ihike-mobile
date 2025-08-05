@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Ajout de FontAwesome5
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 type AccueilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accueil'>;
 
@@ -15,14 +15,14 @@ export default function Accueil() {
     <View style={styles.container}>
       {/* Arrière-plan animé */}
       <LottieView
-        source={require('../../assets/animations/walking.json')}
+        source={require('../../assets/animations/GPSNavigation.json')}
         autoPlay
         loop
         style={styles.backgroundAnimation}
         resizeMode="cover"
       />
 
-      {/* Logo de l'application */}
+     
       <View style={styles.header}>
         <Image
           source={require('../../assets/logo/ihike-logo.png')}
@@ -32,7 +32,7 @@ export default function Accueil() {
       </View>
 
       <View style={styles.overlay}>
-        {/* Titre avec icône */}
+       
         <View style={styles.titleRow}>
           <Text style={styles.title}>Bienvenue</Text>
           <FontAwesome5 name="hiking" size={36} color="#000" style={styles.titleIcon} />
@@ -86,8 +86,10 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start', 
     marginBottom: 40,
+    marginLeft: 30,
+    width: '100%',
   },
   title: {
     fontSize: 36,
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'absolute',
-    top: 40,
+    top: 80, 
     width: '100%',
     alignItems: 'center',
     zIndex: 2,
@@ -126,6 +128,5 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 220,
     height: 120,
-    marginTop: 10,
   },
 });

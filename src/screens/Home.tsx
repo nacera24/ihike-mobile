@@ -11,7 +11,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { setNom } from '../redux/userSlice';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // AJOUT DE L'ICÔNE
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 type AccueilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <LottieView
-        source={require('../../assets/animations/walking.json')}
+        source={require('../../assets/animations/Traveler.json')}
         autoPlay
         loop
         style={styles.backgroundAnimation}
