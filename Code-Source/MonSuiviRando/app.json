@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "iHike",
+    "slug": "MonSuiviRando",
+    "owner": "sahminacera",
+    "scheme": "monsuivirando",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "jsEngine": "jsc",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyBdm5JWRvkPgVZefgYeQmlrzoFDdbudDEU"
+      },
+      "bundleIdentifier": "com.sahminacera.monsuivirando",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBdm5JWRvkPgVZefgYeQmlrzoFDdbudDEU"
+        }
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.sahminacera.monsuivirando"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autorisez MonSuiviRando à accéder à votre caméra",
+          "microphonePermission": "Autorisez MonSuiviRando à accéder à votre micro",
+          "recordAudioAndroid": false
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "63c1cb72-cafb-4d83-9c21-196169aeef07"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/63c1cb72-cafb-4d83-9c21-196169aeef07"
+    }
+  }
+}
